@@ -14,7 +14,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
                     '%env(CORS_ALLOW_ORIGIN)%',
                 ],
                 'allow_methods' => ['GET', 'OPTIONS', 'POST', 'PUT', 'PATCH', 'DELETE'],
-                'allow_headers' => ['Content-Type', 'Authorization'],
+                'allow_headers' => ['Content-Type', 'Authorization', 'Preload', 'Fields'],
                 'expose_headers' => ['Link'],
                 'max_age' => 3600,
             ],

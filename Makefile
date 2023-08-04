@@ -42,7 +42,7 @@ database:
 
 ## Install the whole dev environment
 install:
-	@$(DC) build
+	@$(DC) build --no-cache
 	@$(MAKE) start -s
 	@$(MAKE) vendor -s
 	@$(MAKE) db-reset -s
@@ -53,11 +53,15 @@ vendor:
 
 ## Start the project
 start:
-	@$(DC) up -d --remove-orphans --no-recreate
+	@$(DC) up --pull --wait
 
 ## Stop the project
 stop:
 	@$(DC) stop
+	@$(DC) rm -v --force
+
+down:
+	@$(DC) down --remove-orphans
 	@$(DC) rm -v --force
 
 .PHONY: php database install vendor start stop
@@ -86,8 +90,8 @@ Tests:
 php-cs-fixer:
 	@$(EXEC) vendor/bin/php-cs-fixer fix --dry-run --diff
 
-## Run psalm static analysis
-psalm:
+## Run phpstan static analysis
+phpstan:
 	@$(EXEC) vendor/bin/phpstan --memory-limit=512M
 
 ## Run code depedencies static analysis
@@ -103,9 +107,9 @@ phpunit:
 	@$(EXEC) bin/phpunit
 
 ## Run either static analysis and tests
-ci: php-cs-fixer psalm deptrac phpunit
+ci: php-cs-fixer phpstan deptrac phpunit
 
-.PHONY: php-cs-fixer psalm deptrac phpunit ci
+.PHONY: php-cs-fixer phpstan deptrac phpunit ci
 
 #################################
 Tools:

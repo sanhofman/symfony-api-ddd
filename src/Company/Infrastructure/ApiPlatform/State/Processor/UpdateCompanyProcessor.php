@@ -15,7 +15,7 @@ use App\Company\Domain\ValueObject\CompanyRanking;
 use App\Company\Infrastructure\ApiPlatform\Payload\CompanyWriteModel;
 use App\Company\Infrastructure\ApiPlatform\Resource\CompanyResource;
 use App\Shared\Application\Command\CommandBusInterface;
-use Symfony\Component\Uid\Uuid;
+use Symfony\Component\Uid\Ulid;
 use Webmozart\Assert\Assert;
 
 final readonly class UpdateCompanyProcessor implements ProcessorInterface
@@ -32,7 +32,7 @@ final readonly class UpdateCompanyProcessor implements ProcessorInterface
 
         /** @var CompanyWriteModel $data */
         $command = new UpdateCompanyCommand(
-            new CompanyId(Uuid::fromString($context['previous_data']->id)),
+            new CompanyId(Ulid::fromString($context['previous_data']->id)),
             new CompanyName($data->name),
             new CompanyGroup($data->group),
             new CompanyRanking($data->ranking),

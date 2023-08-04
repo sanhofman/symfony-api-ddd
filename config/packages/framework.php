@@ -11,6 +11,9 @@ return static function (ContainerConfigurator $containerConfigurator): void {
             'secret' => '%env(APP_SECRET)%',
             'http_method_override' => false,
             'handle_all_throwables' => true,
+            'trusted_proxies' => '%env(TRUSTED_PROXIES)%',
+            'trusted_hosts' => '%env(TRUSTED_HOSTS)%',
+            'trusted_headers' => ['x-forwarded-for', 'x-forwarded-proto'],
             'session' => [
                 'handler_id' => null,
                 'cookie_secure' => 'auto',

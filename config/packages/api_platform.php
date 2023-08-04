@@ -10,8 +10,18 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         'title' => 'Symfony API DDD Template',
         'description' => 'Symfony API DDD Template - API Documentation',
         'version' => '0.1',
+        'enable_docs' => true,
+        'enable_swagger' => true,
+        'enable_swagger_ui' => true,
         'defaults' => [
+            'stateless' => true,
             'pagination_items_per_page' => 100,
+            'cache_headers' => [
+                'vary' => ['Content-Type', 'Authorization', 'Origin'],
+            ],
+            'extra_properties' => [
+                'standard_put' => true,
+            ],
         ],
         'show_webby' => false,
         'mapping' => [
@@ -20,8 +30,8 @@ return static function (ContainerConfigurator $containerConfigurator): void {
             ],
         ],
         'formats' => [
-            'json' => ['application/json'],
             'jsonld' => ['application/ld+json'],
+            'json' => ['application/json'],
             'html' => ['text/html'],
         ],
         'patch_formats' => [

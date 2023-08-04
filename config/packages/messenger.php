@@ -26,7 +26,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
             ],
             'routing' => [
                 QueryInterface::class => 'sync',
-                CommandInterface::class => 'sync',
+                CommandInterface::class => 'sync', // @TODO:: use async writes with outbox.
             ],
         ],
     ]);

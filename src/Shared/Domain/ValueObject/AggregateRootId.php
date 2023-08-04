@@ -5,22 +5,21 @@ declare(strict_types=1);
 namespace App\Shared\Domain\ValueObject;
 
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Uid\AbstractUid;
-use Symfony\Component\Uid\Uuid;
+use Symfony\Component\Uid\Ulid;
 
 trait AggregateRootId
 {
     #[ORM\Id]
-    #[ORM\Column(name: 'id', type: 'uuid')]
-    public readonly AbstractUid $value;
+    #[ORM\Column(name: 'id', type: 'string', length: 26, unique: true)]
+    public readonly string $value;
 
-    final public function __construct(?AbstractUid $value = null)
+    final public function __construct(?Ulid $value = null)
     {
-        $this->value = $value ?? Uuid::v4();
+        $this->value = $value ? $value->toBase32() : Ulid::generate();
     }
 
     public function __toString(): string
     {
-        return (string) $this->value;
+        return $this->value;
     }
 }

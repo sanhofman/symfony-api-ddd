@@ -67,8 +67,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 final class CompanyResource
 {
     #[Assert\NotBlank]
-    #[Assert\Uuid]
+    #[Assert\Ulid]
     public string $id;
+
     #[Assert\NotBlank]
     public string $name;
 
@@ -94,7 +95,7 @@ final class CompanyResource
     public static function fromModel(Company $company): self
     {
         return new self(
-            $company->id()->value->jsonSerialize(),
+            $company->id()->value,
             $company->name()->value,
             $company->group()->value,
             $company->ranking()->value,
