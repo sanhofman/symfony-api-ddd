@@ -15,7 +15,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         'enable_swagger_ui' => true,
         'defaults' => [
             'stateless' => true,
-            'pagination_items_per_page' => 100,
+            'pagination_items_per_page' => 20,
             'cache_headers' => [
                 'vary' => ['Content-Type', 'Authorization', 'Origin'],
             ],

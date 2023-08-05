@@ -39,6 +39,15 @@ final class DoctrineCompanyRepository extends DoctrineRepository implements Comp
         return $this->em->find(self::ENTITY_CLASS, $id->value);
     }
 
+    public function getMostRecent(): ?Company
+    {
+        return $this->query()
+            ->orderBy('company.id.value', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     public function withCompanyGroup(CompanyGroup $companyGroup): static
     {
         return $this->filter(static function (QueryBuilder $qb) use ($companyGroup): void {

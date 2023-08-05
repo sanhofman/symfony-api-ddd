@@ -44,21 +44,29 @@ use Symfony\Component\Validator\Constraints as Assert;
             provider: CompanyItemProvider::class,
         ),
         new Post(
+            status: 202,
             input: CompanyWriteModel::class,
+            output: false,
             processor: CreateCompanyProcessor::class,
         ),
         new Put(
+            status: 202,
             input: CompanyWriteModel::class,
+            output: false,
             provider: CompanyItemProvider::class,
             processor: UpdateCompanyProcessor::class,
             extraProperties: ['standard_put' => true],
         ),
         new Patch(
+            status: 202,
             input: CompanyWriteModel::class,
+            output: false,
             provider: CompanyItemProvider::class,
             processor: UpdateCompanyProcessor::class,
         ),
         new Delete(
+            status: 202,
+            output: false,
             provider: CompanyItemProvider::class,
             processor: DeleteCompanyProcessor::class,
         ),
@@ -95,7 +103,7 @@ final class CompanyResource
     public static function fromModel(Company $company): self
     {
         return new self(
-            $company->id()->value,
+            (string) $company->id()->value,
             $company->name()->value,
             $company->group()->value,
             $company->ranking()->value,

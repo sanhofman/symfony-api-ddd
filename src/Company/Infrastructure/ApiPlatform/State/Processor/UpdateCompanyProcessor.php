@@ -7,7 +7,6 @@ namespace App\Company\Infrastructure\ApiPlatform\State\Processor;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Company\Application\Command\UpdateCompanyCommand;
-use App\Company\Domain\Model\Company;
 use App\Company\Domain\ValueObject\CompanyGroup;
 use App\Company\Domain\ValueObject\CompanyId;
 use App\Company\Domain\ValueObject\CompanyName;
@@ -25,7 +24,7 @@ final readonly class UpdateCompanyProcessor implements ProcessorInterface
     ) {
     }
 
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): CompanyResource
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): void
     {
         Assert::isInstanceOf($data, CompanyWriteModel::class);
         Assert::isInstanceOf($context['previous_data'], CompanyResource::class);
@@ -38,9 +37,6 @@ final readonly class UpdateCompanyProcessor implements ProcessorInterface
             new CompanyRanking($data->ranking),
         );
 
-        /** @var Company $model */
-        $model = $this->commandBus->dispatch($command);
-
-        return CompanyResource::fromModel($model);
+        $this->commandBus->dispatch($command);
     }
 }

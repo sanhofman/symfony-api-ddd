@@ -20,12 +20,10 @@ final readonly class DeleteCompanyProcessor implements ProcessorInterface
     ) {
     }
 
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): null
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): void
     {
         Assert::isInstanceOf($data, CompanyResource::class);
 
         $this->commandBus->dispatch(new DeleteCompanyCommand(new CompanyId(Ulid::fromString($data->id))));
-
-        return null;
     }
 }

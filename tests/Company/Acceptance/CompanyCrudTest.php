@@ -8,13 +8,11 @@ use ApiPlatform\Symfony\Bundle\Test\ApiTestCase;
 use App\Company\Domain\Model\Company;
 use App\Company\Domain\Repository\CompanyRepositoryInterface;
 use App\Company\Domain\ValueObject\CompanyGroup;
-use App\Company\Domain\ValueObject\CompanyId;
 use App\Company\Domain\ValueObject\CompanyName;
 use App\Company\Domain\ValueObject\CompanyRanking;
 use App\Company\Infrastructure\ApiPlatform\Resource\CompanyResource;
 use App\Tests\Company\DummyFactory\DummyCompanyFactory;
 use App\Tests\Shared\Unit\Functional\ReloadDatabaseTrait;
-use Symfony\Component\Uid\Ulid;
 
 final class CompanyCrudTest extends ApiTestCase
 {
@@ -27,7 +25,7 @@ final class CompanyCrudTest extends ApiTestCase
         /** @var CompanyRepositoryInterface $companyRepository */
         $companyRepository = static::getContainer()->get(CompanyRepositoryInterface::class);
 
-        for ($i = 1; $i < 100; ++$i) {
+        for ($i = 1; $i <= 100; ++$i) {
             $companyRepository->save(DummyCompanyFactory::createCompany(
                 name: sprintf('name_%d', $i),
                 group: sprintf('group_%d', $i),
@@ -39,6 +37,15 @@ final class CompanyCrudTest extends ApiTestCase
 
         static::assertResponseIsSuccessful();
         static::assertMatchesResourceCollectionJsonSchema(CompanyResource::class);
+
+        static::assertJsonContains([
+            'hydra:totalItems' => 100,
+            'hydra:view' => [
+                'hydra:first' => '/api/companies?page=1',
+                'hydra:last' => '/api/companies?page=5',
+                'hydra:next' => '/api/companies?page=2',
+            ],
+        ]);
     }
 
     public function testFilterCompaniesByGroup(): void
@@ -52,10 +59,13 @@ final class CompanyCrudTest extends ApiTestCase
         $companyRepository->save(DummyCompanyFactory::createCompany(group: 'groupTwo'));
         $companyRepository->save(DummyCompanyFactory::createCompany(group: 'groupTwo'));
 
-        $client->request('GET', '/api/companies?group=groupTwo');
+        $client->request('GET', '/api/companies?companyGroup=groupTwo');
 
         static::assertResponseIsSuccessful();
         static::assertMatchesResourceCollectionJsonSchema(CompanyResource::class);
+        static::assertJsonContains([
+            'hydra:totalItems' => 2,
+        ]);
     }
 
     public function testReturnCompany(): void
@@ -74,7 +84,7 @@ final class CompanyCrudTest extends ApiTestCase
         static::assertMatchesResourceItemJsonSchema(CompanyResource::class);
 
         static::assertJsonContains([
-            'id' => $company->id()->value,
+            'id' => $company->id()->value->__toString(),
             'name' => 'name',
             'group' => 'group',
             'ranking' => 1,
@@ -85,30 +95,23 @@ final class CompanyCrudTest extends ApiTestCase
     {
         $client = static::createClient();
 
-        $companyPayload = DummyCompanyFactory::createCompanyWriteModel();
+        $companyPayload = DummyCompanyFactory::createCompanyWriteModel(name: 'newCompany');
 
         $response = $client->request('POST', '/api/companies', [
             'json' => $companyPayload->jsonSerialize(),
         ]);
 
+        // Async processing.
         static::assertResponseIsSuccessful();
-        static::assertMatchesResourceItemJsonSchema(CompanyResource::class);
-
-        static::assertJsonContains([
-            'id' => $response->toArray()['id'],
-            'name' => 'name',
-            'group' => 'group',
-            'ranking' => 1,
-        ]);
-
-        $id = new CompanyId(Ulid::fromString(str_replace('/api/companies/', '', $response->toArray()['id'])));
+        static::assertResponseStatusCodeSame(202);
+        static::assertEmpty($response->getContent());
 
         /** @var Company $company */
-        $company = static::getContainer()->get(CompanyRepositoryInterface::class)->ofId($id);
+        $company = static::getContainer()->get(CompanyRepositoryInterface::class)->getMostRecent();
 
+        // Test process finished successfully.
         static::assertNotNull($company);
-        static::assertEquals($id, $company->id());
-        static::assertEquals(new CompanyName('name'), $company->name());
+        static::assertEquals(new CompanyName('newCompany'), $company->name());
         static::assertEquals(new CompanyGroup('group'), $company->group());
         static::assertEquals(new CompanyRanking(1), $company->ranking());
     }
@@ -157,7 +160,7 @@ final class CompanyCrudTest extends ApiTestCase
         $company = DummyCompanyFactory::createCompany();
         $companyRepository->save($company);
 
-        $client->request('PUT', sprintf('/api/companies/%s', $company->id()), [
+        $response = $client->request('PUT', sprintf('/api/companies/%s', $company->id()), [
             'json' => [
                 'name' => 'newName',
                 'group' => 'newGroup',
@@ -165,15 +168,12 @@ final class CompanyCrudTest extends ApiTestCase
             ],
         ]);
 
+        // Async processing.
         static::assertResponseIsSuccessful();
-        static::assertMatchesResourceItemJsonSchema(CompanyResource::class);
+        static::assertResponseStatusCodeSame(202);
+        static::assertEmpty($response->getContent());
 
-        static::assertJsonContains([
-            'name' => 'newName',
-            'group' => 'newGroup',
-            'ranking' => 20,
-        ]);
-
+        // Test process finished successfully.
         $updatedCompany = $companyRepository->ofId($company->id());
 
         static::assertNotNull($company);
@@ -194,9 +194,12 @@ final class CompanyCrudTest extends ApiTestCase
 
         $response = $client->request('DELETE', sprintf('/api/companies/%s', $company->id()));
 
+        // Async processing.
         static::assertResponseIsSuccessful();
+        static::assertResponseStatusCodeSame(202);
         static::assertEmpty($response->getContent());
 
+        // Test process finished successfully.
         static::assertNull($companyRepository->ofId($company->id()));
     }
 }

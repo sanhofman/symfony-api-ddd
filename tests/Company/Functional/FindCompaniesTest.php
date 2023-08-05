@@ -90,8 +90,14 @@ final class FindCompaniesTest extends KernelTestCase
 
         static::assertCount(count($initialCompanies), $companyRepository);
 
-        $companies = $queryBus->ask(new FindCompaniesQuery(page: 1, itemsPerPage: 2));
+        $companies = $queryBus->ask(new FindCompaniesQuery(page: 2, itemsPerPage: 2));
 
         static::assertCount(2, $companies);
+
+        $i = 0;
+        foreach ($companies as $company) {
+            static::assertSame($initialCompanies[$i + 2], $company);
+            ++$i;
+        }
     }
 }

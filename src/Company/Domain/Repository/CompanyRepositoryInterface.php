@@ -17,5 +17,7 @@ interface CompanyRepositoryInterface extends RepositoryInterface
 
     public function ofId(CompanyId $id): ?Company;
 
+    public function getMostRecent(): ?Company;
+
     public function withCompanyGroup(CompanyGroup $companyGroup): static;
 }

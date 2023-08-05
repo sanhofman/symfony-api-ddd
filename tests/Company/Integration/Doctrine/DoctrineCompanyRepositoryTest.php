@@ -81,6 +81,28 @@ final class DoctrineCompanyRepositoryTest extends KernelTestCase
         static::assertEquals($company->name(), $companyRepository->ofId($company->id())->name());
     }
 
+    public function testGetMostRecent(): void
+    {
+        /** @var CompanyRepositoryInterface $companyRepository */
+        $companyRepository = static::getContainer()->get(CompanyRepositoryInterface::class);
+
+        static::assertEmpty($companyRepository);
+
+        $companies = [
+            DummyCompanyFactory::createCompany(),
+            DummyCompanyFactory::createCompany(),
+            DummyCompanyFactory::createCompany(name: 'mostRecent'),
+        ];
+
+        foreach ($companies as $company) {
+            $companyRepository->save($company);
+        }
+
+        static::getContainer()->get(EntityManagerInterface::class)->clear();
+
+        static::assertEquals('mostRecent', $companyRepository->getMostRecent()->name()->value);
+    }
+
     public function testWithCompanyGroup(): void
     {
         /** @var CompanyRepositoryInterface $companyRepository */
